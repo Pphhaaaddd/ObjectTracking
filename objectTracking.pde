@@ -115,7 +115,7 @@ void draw() {
         objects.add(co);
       }
     }
-  } else {
+  } else { // When new objects are less than old objects
 
     for (Object o : objects) {
       o.taken = false;
@@ -136,7 +136,7 @@ void draw() {
         o.become(matched);
         o.lifespan = 100;
       }
-    }
+    }// delete objects when lifespan ==0
     for (int i = objects.size()-1; i>=0; i--) {
       Object o=objects.get(i);
       if (!o.taken) {
