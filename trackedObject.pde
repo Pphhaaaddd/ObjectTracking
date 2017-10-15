@@ -1,9 +1,10 @@
 class Object {
   float minx, miny, maxx, maxy; //points of the rectangle
   float x, y; // center of the Object
-  int lifetime=0, id=0;
+  int lifespan=100, id=0;
   ArrayList<PVector> locs; // list of points in the object
 
+  boolean taken = false;
 
   Object(float x1, float y1) {
     locs = new ArrayList<PVector>();
@@ -41,12 +42,6 @@ class Object {
     locs.add(new PVector(x1, y1));
     x=(minx+maxx)/2; 
     y=(miny+maxy)/2;
-    //for (PVector l : locs) {
-    //  x +=l.x;
-    //  y +=l.y;
-    //}
-    //x /= locs.size();
-    //y /= locs.size();
   }
 
   void display(int i) {
@@ -55,7 +50,6 @@ class Object {
       stroke(0, 255, 0);
       point(l.x, l.y);
     }
-    id = i+1;
     textAlign(CENTER);
     textSize(16);
     fill(255);
@@ -74,10 +68,18 @@ class Object {
     return new PVector(x, y);
   }
 
+  //Copy one Object to wnother
   void become(Object other) {
     minx = other.minx;
     maxx = other.maxx;
     miny = other.miny;
     maxy = other.maxy;
+
+    x = other.x;
+    y = other.y;
+  
+    taken = other.taken;
+    //id = other.id;
+    locs = other.locs;
   }
 }
