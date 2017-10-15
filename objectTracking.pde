@@ -3,7 +3,6 @@
 
 import processing.video.*;
 Capture video;
-
 int objectCounter=0;
 PImage prevFrame;
 ArrayList<Object> objects = new ArrayList<Object>();
@@ -20,8 +19,11 @@ float maxDistThreshold=300;
 //to check if first frame has been set to background
 boolean doneOnce = false;
 
+//Scale down video before formatting
+float videoScale = 2;
+
 void setup() {
-  size(640, 480, P2D);
+  size(320, 240, P2D);
   video = new Capture(this, width, height, 30);
   video.start();
   prevFrame = createImage(video.width, video.height, RGB);
@@ -88,38 +90,75 @@ void draw() {
 
   //MATCH currentObjects with objects
 
-  if (objects.isEmpty() && currentObjects.size() > 0) // there are no objects 
-    for (Object o : currentObjects) {
-      println("Adding");
-      o.id = objectCounter;
-      objectCounter++;
-      objects.add(o);
-    } else if (currentObjects.size() == objects.size() ) {
+  if (currentObjects.size() >= objects.size() ) {
     for (Object o : objects) {
       float minD = 100000;
-      Object matched=new Object(0,0);
+      Object matched=new Object(0, 0);
       for (Object co : currentObjects) {
         float d = (o.x - co.x)*(o.x - co.x) + (o.y - co.y)*(o.y - co.y);
-        if ( d < minD*minD ) {
+        if ( d < minD) {
           minD = d;
           matched.become(co);
         }
       }
       o.become(matched);
+      o.lifespan = 100;
+
+      for (Object co : currentObjects) 
+        if ( o.x == co.x && o.y == co.y) 
+          co.taken = true;
+    }
+    for (Object co : currentObjects) {
+      if (!co.taken) {
+        co.id = objectCounter;
+        objectCounter++;
+        objects.add(co);
+      }
+    }
+  } else {
+
+    for (Object o : objects) {
+      o.taken = false;
+    }
+
+    for (Object o : objects) {
+      float minD = 100000;
+      Object matched=new Object(0, 0);
+      for (Object co : currentObjects) {
+        float d = (o.x - co.x)*(o.x - co.x) + (o.y - co.y)*(o.y - co.y);
+        if ( d < minD*minD && !o.taken) {
+          minD = d;
+          matched.become(co);
+        }
+      }
+      if (minD<300) {
+        matched.taken = true;
+        o.become(matched);
+        o.lifespan = 100;
+      }
+    }
+    for (int i = objects.size()-1; i>=0; i--) {
+      Object o=objects.get(i);
+      if (!o.taken) {
+        objects.get(i).lifespan--;
+        if (objects.get(i).lifespan ==0 )
+          objects.remove(i);
+      }
     }
   }
 
-  for (int i= objects.size()-1; i>=0; i--)
+  for (int i= objects.size()-1; i>=0; i--) {
     objects.get(i).display(i);
+  }
 
   fill(0);
   textAlign(RIGHT);
-  textSize(24);
+  textSize(20);
   text("Fg/bg threshold: " + colorThreshold, width-30, 40);
   text("Distance threshold: " + distThreshold, width-30, 20);
-  
+
   text("currentObjects: " + currentObjects.size(), width-30, height-40);
-  //text("objects: " + objects.size(), width-30, height-20);
+  text("objects: " + objects.size(), width-30, height-20);
 }
 
 // "Distance squared" between two points/colors
